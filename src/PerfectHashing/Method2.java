@@ -103,7 +103,7 @@ public class Method2 {
         return b;
     }
 
-    void search(int rtf){
+    public void search(int rtf){
         int key1 = getKey(mainHashMatrix,rtf);
         boolean found = false;
         if(!usedLvl2){

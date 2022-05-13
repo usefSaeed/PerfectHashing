@@ -1,52 +1,80 @@
 package PerfectHashing;
 
-import java.util.Random;
+import java.util.*;
 
 public class Method1 {
     private final int[] input;
-    private final int size;
+    private final int inputSize;
+    private final int hashTableSize;
     private int[] hashMatrix;
     private int[] finalHashTable;
+    private boolean[] filled;
 
     public Method1(int[] input) {
         this.input = input;
-        this.size = input.length;
-        this.hashMatrix = generateHashMatrix(this.size*this.size);
-        this.finalHashTable = new int[this.size*this.size];
-        this.mainLogic();
+        this.inputSize = input.length;
+        this.hashTableSize = input.length * input.length;
+        this.hashMatrix = generateHashMatrix(hashTableSize);
+        this.finalHashTable = new int[hashTableSize];
+        this.filled = new boolean[hashTableSize];
+        this.generateHashTable();
     }
 
     int[] generateHashMatrix(int size){
         int[] res = new int[size];
         Random rand = new Random();
-        for (int  i=0; i<size;i++)
+        for (int  i = 0; i < size; i++)
             res[i] = rand.nextInt(Integer.MAX_VALUE);
         return res;
     }
 
-    int getKey(int[] h,int x){
-        int key=0;
-        int size = h.length;
-        for (int i = 0; i < size; i++){
-            key=key<<1;
-            key |= parity(x & h[i]);
+    int getIndex(int key){
+        int index = 0;
+        for (int i = 0; i <this.inputSize; i++){
+            index <<= 1;
+            index |= parity(key & this.hashMatrix[i]);
         }
-        return key%size;
+        return index % this.hashTableSize;
     }
 
     int parity(int p){
         int isOdd=0;
-        while(p!=0){
+        while (p != 0){
             isOdd ^= 1;
             p &= p-1;
         }
         return isOdd;
     }
 
-    void mainLogic(){
-        /**
-         * MONO DO YOUR THING
-         */
+    void generateHashTable(){
+        int i = 0;
+        while (i < this.inputSize){
+            boolean collision = insert(this.input[i]);
+            i++;
+            if (collision){
+                Arrays.fill(filled, false);
+                Arrays.fill(finalHashTable, 0);
+                this.hashMatrix = generateHashMatrix(this.hashTableSize);
+                i = 0;
+            }
+        }
+    }
+
+    boolean insert(int key){
+        int index = getIndex(key);
+        if (this.filled[index]){
+            return true;
+        }
+        else{
+            this.finalHashTable[index] = key;
+            this.filled[index] = true;
+        }
+        return false;
+    }
+
+    public boolean search(int key){
+        int index = getIndex(key);
+        return this.finalHashTable[index] == key;
     }
 
 

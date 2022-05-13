@@ -2,7 +2,15 @@ public class Driver {
     public static void main(String[] args){
         int[] a = {12,21,32,43,4,5,3,356,3224,54,455};
         PerfectHashing.Method1 m1  = new PerfectHashing.Method1(a);
+        for (int i = 0; i < a.length; i++){
+            System.out.println(m1.search(a[i]));
+        }
+        System.out.println(m1.search(100));
         PerfectHashing.Method2 m2  = new PerfectHashing.Method2(a);
+        for (int i = 0; i < a.length; i++){
+            m2.search(a[i]);
+            System.out.println();
+        }
         /**
          * MONO DO YOUR THING (ANALYSIS)
          */
