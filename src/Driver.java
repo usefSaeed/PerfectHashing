@@ -1,6 +1,8 @@
+import java.util.Random;
+
 public class Driver {
     public static void main(String[] args){
-        int[] a = {12,21,32,43,4,5,3,356,3224,54,455};
+        int[] a = createArray(10000);
         PerfectHashing.Method1 m1  = new PerfectHashing.Method1(a);
         for (int i = 0; i < a.length; i++){
             System.out.println(m1.search(a[i]));
@@ -14,6 +16,17 @@ public class Driver {
         /**
          * MONO DO YOUR THING (ANALYSIS)
          */
+    }
+
+    public static int[] createArray(int n){
+        Random rd = new Random();
+        int[] arr = new int[n];
+        int upperBound = Integer.MAX_VALUE;
+        int lowerBound = Integer.MIN_VALUE;
+        for(int i = 0; i < arr.length; i++){
+            arr[i] = rd.nextInt(lowerBound, upperBound);
+        }
+        return arr;
     }
 }
 /**

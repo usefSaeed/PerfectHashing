@@ -11,15 +11,19 @@ public class Method2 {
     private final int[][] hashLvl2;
     private final int size;
     private boolean usedLvl2;
+    private final int hashTableBits;
+    private int collisionsCount;
 
     public Method2(int[] input) {
         this.input = input;
         this.size = input.length;
         this.hashLvl1 = new int[this.size];
-        this.mainHashMatrix = generateHashMatrix(this.size);
+        this.hashTableBits = (int) Math.ceil(Math.log(size)/Math.log(2));
+        this.mainHashMatrix = generateHashMatrix(this.hashTableBits);
         this.hashMatricesLvl2 = new int[this.size][];
         this.hashLvl2 = new int[this.size][];
         this.usedLvl2 = false;
+        this.collisionsCount = 0;
         this.hashPerfectionist();
     }
 
@@ -31,14 +35,24 @@ public class Method2 {
         return res;
     }
 
-    int getKey(int[] h,int x){
-        int key=0;
-        int size = h.length;
-        for (int i = 0; i < size; i++){
-            key=key<<1;
-            key |= parity(x & h[i]);
+    int getIndexM1(int[] h, int x){
+        int index=0;
+        int bits = h.length;
+        for (int i = 0; i < bits; i++){
+            index=index<<1;
+            index |= parity(x & h[i]);
         }
-        return key%size;
+        return index % size;
+    }
+
+    int getIndexM2(int[] h, int x,int inputSizeM1){
+        int index=0;
+        int bits = h.length;
+        for (int i = 0; i < bits; i++){
+            index=index<<1;
+            index |= parity(x & h[i]);
+        }
+        return index % inputSizeM1;
     }
 
     int parity(int p){
@@ -57,10 +71,10 @@ public class Method2 {
     boolean doneByLvl1(){
         boolean[] beenHereBefore = new boolean[size];
         for (int i=0;i<size;i++){
-            int key = getKey(mainHashMatrix,input[i]);
-            if (beenHereBefore[key]) return false;
-            beenHereBefore[key] = true;
-            hashLvl1[key] = input[i];
+            int index = getIndexM1(mainHashMatrix,input[i]);
+            if (beenHereBefore[index]) return false;
+            beenHereBefore[index] = true;
+            hashLvl1[index] = input[i];
         }
         return true;
     }
@@ -71,12 +85,13 @@ public class Method2 {
         boolean[] beenHereBefore = new boolean[size];
         ArrayList[] collisionCont = new ArrayList[size];
         for (int i=0;i<size;i++){
-            int key = getKey(mainHashMatrix,input[i]);
-            hashLvl1[key]++;
-            if (!beenHereBefore[key])
-                collisionCont[key] = new ArrayList<Integer>();
-            beenHereBefore[key] = true;
-            collisionCont[key].add(input[i]);
+            int index = getIndexM1(mainHashMatrix,input[i]);
+            hashLvl1[index]++;
+            collisionsCount++;
+            if (!beenHereBefore[index])
+                collisionCont[index] = new ArrayList<Integer>();
+            beenHereBefore[index] = true;
+            collisionCont[index].add(input[i]);
         }
         for (int i=0;i<size;i++){
             int collisionsNum = hashLvl1[i];
@@ -92,9 +107,10 @@ public class Method2 {
             Method1 m = new Method1(lvl2CurrentBlock);
             hashLvl2[i] = m.getFinalHashTable();
             hashMatricesLvl2[i] = m.getHashMatrix();
+            collisionsCount += m.getCollisionCount();
         }
-
     }
+
 
     int[] convertToArray(ArrayList<Integer> a){
         int[] b = new int[a.size()];
@@ -104,13 +120,14 @@ public class Method2 {
     }
 
     public void search(int rtf){
-        int key1 = getKey(mainHashMatrix,rtf);
+        int index1 = getIndexM1(mainHashMatrix,rtf);
         boolean found = false;
         if(!usedLvl2){
-            if (hashLvl1[key1]==rtf) found = true;
+            if (hashLvl1[index1]==rtf) found = true;
         }else{
-            int key2 = getKey(hashMatricesLvl2[key1],rtf);
-            if (hashLvl2[key1][key2]==rtf) found = true;
+            int inputSizeM2 = hashLvl1[index1]*hashLvl1[index1];
+            int index2 = hashLvl1[index1]!=1 ? getIndexM2(hashMatricesLvl2[index1],rtf,inputSizeM2) : 0;
+            if (hashLvl2[index1][index2]==rtf) found = true;
         }
         if (found)
             System.out.print("Found it :)");
@@ -118,7 +135,11 @@ public class Method2 {
             System.out.print("It doesn't exist :(");
     }
 
-//    public static void main(String[] args){
+    public int[] getHashLvl1() {
+        return hashLvl1;
+    }
+
+    //    public static void main(String[] args){
 //        int[] a = {12,21,32,43,4,5,3,356,3224,54,455};
 //        Method2 m  = new Method2(a);
 //    }

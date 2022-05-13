@@ -7,30 +7,34 @@ public class Method1 {
     private final int inputSize;
     private final int hashTableSize;
     private int[] hashMatrix;
-    private int[] finalHashTable;
-    private boolean[] filled;
+    private final int[] finalHashTable;
+    private final boolean[] filled;
+    private final int hashTableBits;
+    private int collisionCount;
 
     public Method1(int[] input) {
         this.input = input;
         this.inputSize = input.length;
         this.hashTableSize = input.length * input.length;
-        this.hashMatrix = generateHashMatrix(hashTableSize);
+        this.hashTableBits = (int) Math.ceil(Math.log(this.hashTableSize)/Math.log(2));
+        this.hashMatrix = generateHashMatrix();
         this.finalHashTable = new int[hashTableSize];
         this.filled = new boolean[hashTableSize];
+        this.collisionCount = 0;
         this.generateHashTable();
     }
 
-    int[] generateHashMatrix(int size){
-        int[] res = new int[size];
+    int[] generateHashMatrix(){
+        int[] res = new int[hashTableBits];
         Random rand = new Random();
-        for (int  i = 0; i < size; i++)
+        for (int  i = 0; i < hashTableBits; i++)
             res[i] = rand.nextInt(Integer.MAX_VALUE);
         return res;
     }
 
     int getIndex(int key){
         int index = 0;
-        for (int i = 0; i <this.inputSize; i++){
+        for (int i = 0; i <this.hashTableBits; i++){
             index <<= 1;
             index |= parity(key & this.hashMatrix[i]);
         }
@@ -54,11 +58,13 @@ public class Method1 {
             if (collision){
                 Arrays.fill(filled, false);
                 Arrays.fill(finalHashTable, 0);
-                this.hashMatrix = generateHashMatrix(this.hashTableSize);
+                this.hashMatrix = generateHashMatrix();
                 i = 0;
+                this.collisionCount++;
             }
         }
     }
+
 
     boolean insert(int key){
         int index = getIndex(key);
@@ -86,4 +92,6 @@ public class Method1 {
     public int[] getHashMatrix() {
         return hashMatrix;
     }
+
+    public int getCollisionCount() {   return collisionCount;}
 }
